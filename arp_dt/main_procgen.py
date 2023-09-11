@@ -183,7 +183,6 @@ def create_test_step(
     vl_type,
     text,
     reward_min,
-    reward_max,
     use_normalize,
     use_crop,
     eval_data_path,
@@ -220,7 +219,6 @@ def create_test_step(
             vl_type=vl_type,
             text=text,
             reward_min=reward_min,
-            reward_max=reward_max,
             use_normalize=use_normalize,
             use_crop=use_crop,
             eval_data_path=eval_data_path,
@@ -605,7 +603,6 @@ def main(argv):
             vl_type=FLAGS.vl_type,
             text=text,
             reward_min=getattr(train_dataset, "reward_min", 0.0),
-            reward_max=getattr(train_dataset, "reward_max", 1.0),
             use_normalize=FLAGS.data.use_normalize,
             use_crop=FLAGS.use_crop,
         )

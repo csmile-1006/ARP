@@ -38,7 +38,6 @@ def batch_rollout(
     vl_type="clip",
     text=None,
     reward_min=0.0,
-    reward_max=1.0,
     use_normalize=False,
     use_crop=False,
     eval_data_path=None,
@@ -82,61 +81,14 @@ def batch_rollout(
 
         return all_inputs
 
-    def update_preprocessed_video(video_stack):
-        if vl_type == "ts2net":
-            if use_crop:
-                video_stack = center_crop(
-                    np.asarray(video_stack), (video_stack.shape[2] // 2, video_stack.shape[2] // 2)
-                )
-            return torch.stack(list(video_stack)).to(device)
-        elif vl_type == "mugen":
-            if use_crop:
-                video_stack = center_crop(
-                    np.asarray(video_stack), (video_stack.shape[2] // 2, video_stack.shape[2] // 2)
-                )
-            return torch.from_numpy(np.asarray(video_stack)).unsqueeze(0).to(device)
-        else:
-            raise ValueError
-
     reward = jnp.zeros(1, dtype=jnp.float32)
     ep_lens = jnp.zeros(1, dtype=jnp.float32)
 
     videos = []
-    if clip_model[0] is not None:
-        if vl_type == "ts2net":
-
-            def get_input(text):
-                input_ids = clip.tokenize(text).to(device)
-                input_mask = [1] * len(input_ids)
-                segment_ids = [0] * len(input_ids)
-                input_mask, segment_ids = map(lambda x: torch.LongTensor(x).to(device), [input_mask, segment_ids])
-                return input_ids, input_mask, segment_ids
-
-            model, _ = clip_model
-            if isinstance(text, list):
-                pos_input_ids, pos_input_mask, pos_segment_ids = [], [], []
-                for _text in text:
-                    _pos_input_ids, _pos_input_mask, _pos_segment_ids = get_input(_text)
-                    pos_input_ids.append(_pos_input_ids)
-                    pos_input_mask.append(_pos_input_mask)
-                    pos_segment_ids.append(_pos_segment_ids)
-                pos_input_ids, pos_input_mask, pos_segment_ids = map(
-                    lambda x: np.stack(x, axis=0), [pos_input_ids, pos_input_mask, pos_segment_ids]
-                )
-            else:
-                pos_input_ids, pos_input_mask, pos_segment_ids = get_input(text)
-            pos_seq_output = model.get_sequence_output(pos_input_ids, pos_segment_ids, pos_input_mask)
-        elif vl_type == "mugen":
-            model, _ = clip_model
-            if isinstance(text, list):
-                pos_seq_output = model.get_text_embedding({"text": text})
-            else:
-                pos_seq_output = model.get_text_embedding({"text": [text]})
-
     for ep in trange(num_episodes, desc="rollout", ncols=0):
+        episode_data = []
         rtg = {key: jnp.full(1, return_to_go / scale, dtype=jnp.float32) for key in env.config.image_key.split(", ")}
         all_inputs = {}
-        video_stack = defaultdict(lambda: deque([], maxlen=window_size))
         done = jnp.zeros(1, dtype=jnp.int32)
         if eval_data_path is not None:
             goal_image = eval_hdf5["ob"][eval_traj_idx[ep + 1] - 1, -1]
@@ -158,13 +110,6 @@ def batch_rollout(
                     obs = env.reset(env.config.rand_seed + ep)
             else:
                 obs = next_obs
-                if clip_model[0] is not None:
-                    for key in obs["image"].keys():
-                        if vl_type == "ts2net":
-                            video_stack[key].append(clip_model[1](np.asarray(obs["image"][key])))
-                        elif vl_type == "mugen":
-                            video_stack[key].append(np.asarray(obs["image"][key]))
-
             if transform_obs_fn is not None:
                 input_obs = copy.deepcopy(obs)
                 for key, val in input_obs["image"].items():
@@ -208,13 +153,23 @@ def batch_rollout(
                         rtg[key] -= ((clip_reward - reward_min[key])) / scale
                     else:
                         rtg[key] -= clip_reward / scale
-
+            episode_data.append(
+                {
+                    "image": obs["image"],
+                    "action": action,
+                    "reward": _reward,
+                    "state":  env._env.env.env.env.get_state(),
+                    "done": done,
+                    "info": info
+                }
+            )
             done = jnp.logical_or(done, done_prev).astype(jnp.int32)
             if log_interval and t % log_interval == 0:
                 logging.info("step: %d done: %s reward: %s", t, done, reward)
 
             if jnp.all(done):
                 ep_lens += info["episode_len"]
+                np.save(os.path.join("/home/changyeon/procgen_"))
                 break
 
         if info["vid"] is not None:

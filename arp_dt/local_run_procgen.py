@@ -56,10 +56,9 @@ FLAGS_DEF = define_flags_with_default(
     use_vl=True,
     use_task_reward=False,
     vl_type="clip",
-    reward_min=0.0,
-    reward_max=1.0,
     use_normalize=False,
     vl_checkpoint="",
+    eval_with_goal=False
 )
 FLAGS = absl.flags.FLAGS
 
@@ -105,7 +104,6 @@ def create_test_step(
     vl_type,
     text,
     reward_min,
-    reward_max,
     use_normalize,
     eval_data_path,
 ):
@@ -140,7 +138,6 @@ def create_test_step(
             vl_type=vl_type,
             text=text,
             reward_min=reward_min,
-            reward_max=reward_max,
             use_normalize=use_normalize,
             eval_data_path=eval_data_path,
             data_name="data_test.hdf5",
@@ -187,7 +184,6 @@ def main(argv):
         dataset_name += f"_{FLAGS.data.train_env_type}"
 
     train_dataset = ProcgenDataset(FLAGS.data, dataset_name, jax_process_index / jax_process_count)
-
     if FLAGS.eval_with_goal:
         test_data_path = os.path.join(
             FLAGS.data.path,
@@ -203,6 +199,16 @@ def main(argv):
         variant=variant,
         enable=FLAGS.log_all_worker or (jax_process_index == 0),
     )
+    if FLAGS.use_vl:
+        wandb.config.update(
+            {
+                "return_to_go": train_dataset.return_to_go,
+                "scale": train_dataset.scale,
+                "data.scale": train_dataset.config.scale,
+            },
+            allow_val_change=True,
+        )
+
     set_random_seed(FLAGS.seed * (jax_process_index + 1))
 
     if FLAGS.use_vl or FLAGS.data.use_task_reward:
@@ -290,13 +296,12 @@ def main(argv):
         num_episodes=FLAGS.num_test_episodes,
         transform_obs_fn=test_image_aug,
         transform_action_fn=transform_action_fn,
-        return_to_go=FLAGS.return_to_go,
-        scale=FLAGS.scale,
+        return_to_go=getattr(train_dataset, "return_to_go", 1000.0),
+        scale=getattr(train_dataset, "scale", 100.0),
         clip_model=(clip_model, preprocess),
         vl_type=FLAGS.vl_type,
         text=text,
         reward_min=train_dataset.reward_min,
-        reward_max=train_dataset.reward_max,
         use_normalize=FLAGS.use_normalize,
         eval_data_path=test_data_path,
     )

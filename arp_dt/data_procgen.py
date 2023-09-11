@@ -138,7 +138,7 @@ class ProcgenDataset(torch.utils.data.Dataset):
             return discount_cumsum
 
         reward = {
-            image_key: self.h5_file[f"{image_key}_{self.config.vl_type}_reward"][:, -1].astype(np.float32)
+            image_key: self.h5_file[f"{image_key}_{self.config.vl_type}_pos_reward"][:, -1].astype(np.float32)
             for image_key in self.config.image_key.split(", ")
         }
         self.reward_min = {image_key: np.min(reward) for image_key, reward in reward.items()}
