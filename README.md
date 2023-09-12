@@ -26,9 +26,33 @@ conda activate arp
 cat requirements.txt | xargs -n 1 -L 1 pip install
 ```
 
+## Supported Environments
+We support following environments with various types.
+| Env name | Env type                                                                 |
+|----------|--------------------------------------------------------------------------|
+| CoinRun  | none, aisc, aisc_gem                                                     |
+| Maze     | none, aisc, yellowline, redline_yellowgem, reddiag_redstraight_yellowgem |
+
+For experiments in our paper, we use the following environments.
+| Task            | Train (env_name/env_type)         | Test (env_name/env_type)                      |
+|-----------------|--------------------------|--------------------------------------|
+| CoinRun         | coinrun / none           | coinrun / aisc                       |
+| CoinRun-bluegem | coinrun / none           | coinrun / aisc_gem                   |
+| Maze I          | maze / aisc              | maze / none                          |
+| Maze II         | maze / yellowline        | maze / redline                       |
+| Maze III        | maze / redline_yellowgem | maze / reddiag_redstraight_yellowgem |
+
 ## Usage
-### 1. Collecting Demonstrations with High resolution (256 x 256)
-We provide trained PPG checkpoints in `./data/checkpoints`. 
+### 1. Download Expert Demonstrations
+We provide expert datasets used for our Procgen experiments.
+
+| Task                       | Link               |
+|----------------------------|--------------------|
+| CoinRun \| CoinRun-bluegem | http://sample.org/ |
+| Maze I                     | http://sample.org/ |
+| Maze II \| Maze III        | http://sample.org/ |
+#### 1-1. Collecting Demonstrations with High resolution (256 x 256)
+For those interested in constructing their own dataset, we provide trained PPG checkpoints in `./data/checkpoints`. 
 You have to collect following demonstrations.
 1. Training demonstartions. (data_type: train)
 2. Validation demonstrations. (data_type: val)
@@ -66,10 +90,19 @@ Experiments can be launched via the following commands.\
 For training *Instruct*RL agents, set {use VL model} as False.\
 If you want to train/evaluate agents with goal images, you have to collect demonstrations for test (Please refer to 1.3.)
 ```python
-sh ./jobs/train_procgen.sh {data_dir} {env_name} {env_type of training environemts} {env_type of evaluation environments} {augmentation} {use VL model: True | False} {VL model_type: clip | clip_ft} {VL model checkpoint path for ARP-DT+} {seed} {comment on experiment} {lambda for return prediction} {evaluation with goal images}
+sh ./jobs/train_procgen.sh {data_dir} {env_name} {env_type of training environemts} {env_type of evaluation environments} {augmentation} {use VL model: True | False} {VL model_type: clip | clip_ft} {VL model checkpoint path (only for ARP-DT+)} {seed} {comment on experiment} {lambda for return prediction} {evaluation with goal images}
 
 # Example in CoinRun experiments.
 CUDA_VISIBLE_DEVICES=0,1 sh ./jobs/train_procgen.sh ./data/coinrun coinrun none aisc "color_jitter, rotate" True clip "" 0 "ARP-DT-coinrun" 0.01 False
+```
+
+### 5. Evaluating Trained Agents
+You can evaluate our agent in new environments via following commands:
+```python
+sh ./jobs/eval_procgen.sh  {model checkpoint path} {data_dir} {env_name} {env_type of training environments} {env_type of evaluation environments} {use levels used for collecting expert demonstrations: True | False} {use VL model: True | False} {VL model_type: clip | clip_ft} {VL model checkpoint path (only for ARP-DT+)} {comment on experiment}
+
+# Example for evaluating in CoinRun test environments.
+CUDA_VISIBLE_DEVICES=0 sh ./jobs/eval_procgen.sh  /checkpoints/model_epoch49.pkl ./data/coinrun/ coinrun none aisc_gem True True clip "" "ARP-DT-coinrun_test"
 ```
 
 ## Acknowledgement
