@@ -44,13 +44,13 @@ For experiments in our paper, we use the following environments.
 
 ## Usage
 ### 1. Download Expert Demonstrations
-We provide expert datasets used for our Procgen experiments.
+We provide expert datasets used for training in our Procgen experiments.
 
-| Task                       | Link               |
-|----------------------------|--------------------|
-| CoinRun \| CoinRun-bluegem | http://sample.org/ |
-| Maze I                     | http://sample.org/ |
-| Maze II \| Maze III        | http://sample.org/ |
+| Task                       | Link (Google Drive)              |
+|----------------------------|----------------------------------|
+| CoinRun \| CoinRun-bluegem | [Link](https://drive.google.com/drive/folders/17Sv0NHASzJEiam0b-lfg2gZ62SoRqbMX?usp=drive_link) |
+| Maze I                     | [Link](https://drive.google.com/drive/folders/1XMB0JAQTrhqFNTDy-dCii4ymQTYk7yME?usp=drive_link) |
+| Maze II \| Maze III        | [Link](https://drive.google.com/drive/folders/18QllsVBrHiEBCHA_IhTAFniFwVbOewDD?usp=drive_link)|
 #### 1-1. Collecting Demonstrations with High resolution (256 x 256)
 For those interested in constructing their own dataset, we provide trained PPG checkpoints in `./data/checkpoints`. 
 You have to collect following demonstrations.
