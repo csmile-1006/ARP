@@ -68,7 +68,7 @@ CUDA_VISIBLE_DEVICES=0 python -m collect_procgen_data --model_dir ./checkpoints/
 ```
 
 ### 2. Labeling Multimodal Rewards
-Next, you have to label demonstrations via following commands:
+Next, you have to label demonstrations with multimodal rewards via following commands:
 ```python
 python -m arp_dt.label_reward --env_name {env_name} --env_type {env_type} --data_dir {data hdf5 file path} --model_type {clip/clip_ft} --model_ckpt_dir {checkpoint path of fine-tuned CLIP.}
 
@@ -77,7 +77,7 @@ CUDA_VISIBLE_DEVICES=0 python -m arp_dt.label_reward --env_name coinrun --env_ty
 ```
 
 ### 3. Fine-tuning CLIP
-You can fine-tune CLIP with training demonstrations via following commands:
+You can fine-tune CLIP using expert demonstrations from training environments via following commands:
 ```python
 python3 -m finetune_module.finetune --data.path {training data path} --output_dir {directory for saving checkpoints} --env_name {env_name}  --data.train_env_type {env_type} --data.num_demonstrations {number of training demonstrations} --lambda_id {scaling hyperparameter for inverse dynamics loss}
 
@@ -87,10 +87,10 @@ CUDA_VISIBLE_DEVICES=0 python3 -m finetune_module.finetune --data.path ./data/ma
 
 ### 4. Training Agents
 Experiments can be launched via the following commands.\
-For training *Instruct*RL agents, set {use VL model} as False.\
+For training *Instruct*RL|GC-*Instruct*RL agents, set {use VL model} as False.\
 If you want to train/evaluate agents with goal images, you have to collect demonstrations for test (Please refer to 1.3.)
 ```python
-sh ./jobs/train_procgen.sh {data_dir} {env_name} {env_type of training environemts} {env_type of evaluation environments} {augmentation} {use VL model: True | False} {VL model_type: clip | clip_ft} {VL model checkpoint path (only for ARP-DT+)} {seed} {comment on experiment} {lambda for return prediction} {evaluation with goal images}
+sh ./jobs/train_procgen.sh {data_dir} {env_name} {env_type of training environemts} {env_type of evaluation environments} {augmentation} {use VL model: True | False} {VL model_type: BC | clip | clip_ft | clip_goal_conditioned | GCBC} {VL model checkpoint path (only for ARP-DT+)} {seed} {comment on experiment} {lambda for return prediction} {evaluation with goal images}
 
 # Example in CoinRun experiments.
 CUDA_VISIBLE_DEVICES=0,1 sh ./jobs/train_procgen.sh ./data/coinrun coinrun none aisc "color_jitter, rotate" True clip "" 0 "ARP-DT-coinrun" 0.01 False
@@ -99,7 +99,7 @@ CUDA_VISIBLE_DEVICES=0,1 sh ./jobs/train_procgen.sh ./data/coinrun coinrun none 
 ### 5. Evaluating Trained Agents
 You can evaluate our agent in new environments via following commands:
 ```python
-sh ./jobs/eval_procgen.sh  {model checkpoint path} {data_dir} {env_name} {env_type of training environments} {env_type of evaluation environments} {use levels used for collecting expert demonstrations: True | False} {use VL model: True | False} {VL model_type: clip | clip_ft} {VL model checkpoint path (only for ARP-DT+)} {comment on experiment}
+sh ./jobs/eval_procgen.sh  {model checkpoint path} {data_dir} {env_name} {env_type of training environments} {env_type of evaluation environments} {use levels used for collecting expert demonstrations: True | False} {use VL model: True | False} {VL model_type: BC | clip | clip_ft | clip_goal_conditioned | GCBC} {VL model checkpoint path (only for ARP-DT+)} {comment on experiment}
 
 # Example for evaluating in CoinRun test environments.
 CUDA_VISIBLE_DEVICES=0 sh ./jobs/eval_procgen.sh  /checkpoints/model_epoch49.pkl ./data/coinrun/ coinrun none aisc_gem True True clip "" "ARP-DT-coinrun_test"
