@@ -111,5 +111,13 @@ CUDA_VISIBLE_DEVICES=0 sh ./jobs/eval_procgen.sh  /checkpoints/model_epoch49.pkl
 - CLIP implementation is largely based on [scenic](https://github.com/google-research/scenic/tree/main/scenic/projects/baselines/clip).
 
 ## Citation
-TBD.
+```tex
+@article{
+kim2023guide,
+title={Guide Your Agent with Adaptive Multimodal Rewards},
+author={Changyeon Kim and Younggyo Seo and Hao Liu and Lisa Lee and Jinwoo Shin and Honglak Lee and Kimin Lee},
+journal={arXiv preprint arXiv:2309.10790},
+year={2023}
+}
+```
 
