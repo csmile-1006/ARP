@@ -2,7 +2,7 @@
 
 Official Jax/Flax implementation of ARP-DT.
 
-**[Guide Your Agent with Adaptive Multimodal Rewards]()**\
+**[Guide Your Agent with Adaptive Multimodal Rewards](https://arxiv.org/abs/2309.10790) (Accepted to NeurIPS 2023)**\
 [Changyeon Kim](https://changyeon.page)<sup>1</sup>, [Younggyo Seo](https://younggyo.me)<sup>2</sup>, [Hao Liu](https://haoliu.site)<sup>3</sup>, [Lisa Lee](https://leelisa.com)<sup>4</sup>\
 [Jinwoo Shin](https://alinlab.kaist.ac.kr/shin.html)<sup>1</sup>, [Honglak Lee](https://web.eecs.umich.edu/~honglak/)<sup>5,6</sup>, [Kimin Lee](https://sites.google.com/view/kiminlee)<sup>1</sup>
 
